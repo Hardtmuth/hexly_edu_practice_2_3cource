@@ -1,11 +1,13 @@
 import '@mantine/core/styles.css'
 import { MantineProvider } from '@mantine/core'
 
+import { LoginPage } from './pages/LoginPage'
+
 const App = () => {
   return (
-      <MantineProvider>
-        <h1>Hello World</h1>
-      </MantineProvider>
+    <MantineProvider>
+      <LoginPage />
+    </MantineProvider>
   )
 }
 
