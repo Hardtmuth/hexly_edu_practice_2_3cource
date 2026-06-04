@@ -14,4 +14,10 @@ export default {
       button: 'Войти',
     },
   },
+  header: {
+    projects: 'Проекты',
+  },
+  projectList: {
+    my: 'Мои проекты',
+  },
 }

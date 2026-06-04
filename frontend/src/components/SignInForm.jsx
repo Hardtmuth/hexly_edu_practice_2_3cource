@@ -3,7 +3,7 @@ import { useForm, isNotEmpty, hasLength, isEmail } from '@mantine/form'
 import { IconAt } from '@tabler/icons-react'
 
 // import { useDispatch, useSelector } from 'react-redux'
-// import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
 // import { login } from '../slices/authSlice.js'
@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next'
 export const SignInForm = () => {
   const { t } = useTranslation()
   // const dispatch = useDispatch()
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
   // const { loading, error } = useSelector((state) => state.auth)
 
   /*
@@ -27,6 +27,10 @@ export const SignInForm = () => {
       })
   }
   */
+  const handleSubmit = (values) => {
+    console.log(values)
+    navigate('/list')
+  }
 
   const form = useForm({
     mode: 'uncontrolled',
@@ -48,7 +52,7 @@ export const SignInForm = () => {
   })
 
   return (
-    <form onSubmit={form.onSubmit(values => console.log(values))}>
+    <form onSubmit={form.onSubmit(values => handleSubmit(values))}>
       <TextInput
         styles={{
           input: {
@@ -79,6 +83,7 @@ export const SignInForm = () => {
         gradient={{ from: 'pink', to: 'yellow' }}
         mt="lg"
         style={{ width: '100%' }}
+        type="submit"
       >
         {t('loginPage.form.button')}
       </Button>
