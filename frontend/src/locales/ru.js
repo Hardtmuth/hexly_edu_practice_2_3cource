@@ -20,4 +20,26 @@ export default {
   projectList: {
     my: 'Мои проекты',
   },
+  board: {
+    menu: {
+      addTask: 'Добавить задачу',
+      rename: 'Переименовать',
+      addColLeft: 'Добавить слева',
+      addColRight: 'Добавить справа',
+      moveColLeft: 'Переместить влево',
+      moveColRight: 'Переместить влево',
+      deleteCol: 'Удалить',
+    },
+    tooltip: 'Скрыть кнопку "Добавть колонку"',
+  },
+  modals: {
+    editTask: {
+      title: 'Редактировать задачу',
+      name: 'Название задачи',
+      description: 'Описание задачи',
+      btnSave: 'Сохранить',
+      btnCancel: 'Отмена',
+      btnDelete: 'Удалить',
+    },
+  },
 }

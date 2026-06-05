@@ -49,3 +49,38 @@
 :global([data-mantine-color-scheme="dark"]) .interactiveCard.addCard:active {
   background-color: var(--mantine-color-dark-5);
 }
+
+.interactiveCard {
+  position: relative;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.interactiveCard .taskActions {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+.interactiveCard:hover .taskActions {
+  opacity: 1;
+  visibility: visible;
+}
+
+.columnCard {
+  border-radius: 10px;
+  min-height: 600px;
+  transition: background-color 0.2s ease;
+}
+
+.taskDragging {
+  opacity: 0.8;
+  background-color: var(--mantine-color-gray-0) !important;
+}
+
+.columnDraggingOver {
+  background-color: var(--mantine-color-blue-light) !important;
+}
+
+.addCard {
+  cursor: pointer;
+}
