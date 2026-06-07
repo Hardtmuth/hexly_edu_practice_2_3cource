@@ -2,23 +2,33 @@ import { Container, Title, Card, Text, SimpleGrid, Center } from '@mantine/core'
 import { IconPlus } from '@tabler/icons-react'
 
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 
 import classes from '../../assets/styles/Board.module.css'
-
-const boards = [
-  { title: 'Default', description: 'Some Description text', link: '/board' },
-  { title: 'Board 1', description: 'Board 1 Description text', link: '/board' },
-  { title: 'Test', description: 'Test Description text', link: '/board' },
-]
+import { useSelector, useDispatch } from 'react-redux'
+import { useEffect } from 'react'
+import { fetchProjects } from '../slices/projectsSlice.js'
 
 export const ProjectList = () => {
   const { t } = useTranslation()
+  const dispatch = useDispatch()
   const navigate = useNavigate()
+  const { projects, loading, error } = useSelector((state) => state.projects)
+
+  const { userId } = useParams()
+  console.log(userId)
+  console.log(projects)
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchProjects(userId))
+    }
+  }, [dispatch, userId])
 
   const handlerCard = (cardInfo) => {
-    console.log('going to', cardInfo.title)
-    navigate(cardInfo.link)
+    const boardId = cardInfo.id
+    console.log(`Переход на доску: ${cardInfo.title} (ID: ${boardId})`)
+    navigate(`/user/${userId}/board/${boardId}`)
   }
 
   const handlerAddCard = () => {
@@ -28,16 +38,16 @@ export const ProjectList = () => {
   const renderCards = (boardList) => {
     return boardList.map(b => (
       <Card
-        key={b.title}
+        key={b.name}
         shadow="sm"
         withBorder
         className={classes.interactiveCard}
         onClick={() => handlerCard(b)}
       >
         <Title order={4}>
-          {b.title}
+          {b.name}
         </Title>
-        <Text size="sm">
+        <Text size="sm" c="dimmed" mt="sm">
           {b.description}
         </Text>
       </Card>
@@ -51,7 +61,7 @@ export const ProjectList = () => {
       </Title>
 
       <SimpleGrid cols={5}>
-        {renderCards(boards)}
+        {renderCards(projects)}
         <Card
           shadow="sm"
           withBorder

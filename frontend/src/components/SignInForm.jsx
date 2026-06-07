@@ -2,34 +2,31 @@ import { TextInput, PasswordInput, Button, Card, Text } from '@mantine/core'
 import { useForm, isNotEmpty, hasLength, isEmail } from '@mantine/form'
 import { IconAt } from '@tabler/icons-react'
 
-// import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
-// import { login } from '../slices/authSlice.js'
+import { login } from '../slices/authSlice.js'
 
 export const SignInForm = () => {
   const { t } = useTranslation()
-  // const dispatch = useDispatch()
+  const dispatch = useDispatch()
   const navigate = useNavigate()
-  // const { loading, error } = useSelector((state) => state.auth)
+  const { loading, error } = useSelector((state) => state.auth)
 
-  /*
   const handleSubmit = (values) => {
     dispatch(login(values))
       .unwrap()
-      .then(() => {
+      .then((user) => {
         console.log('Успешная авторизация')
-        navigate('/user')
+
+        const { id } = user
+        console.log('Пользователь ID:', id)
+        navigate(`/user/${id}/list`)
       })
       .catch((errorMsg) => {
         console.error('Ошибка:', errorMsg)
       })
-  }
-  */
-  const handleSubmit = (values) => {
-    console.log(values)
-    navigate('/list')
   }
 
   const form = useForm({

@@ -1,9 +1,13 @@
 import { createRoot } from 'react-dom/client'
+import { Provider } from 'react-redux'
 
 import './i18next.js'
+import store from './slices/index.js'
 import App from './App.jsx'
 
 const root = createRoot(document.getElementById('root'))
 root.render(
-  <App />,
+  <Provider store={store}>
+    <App />
+  </Provider>,
 )

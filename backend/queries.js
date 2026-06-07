@@ -2,6 +2,7 @@ import { Pool } from 'pg'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { config } from 'dotenv'
+import bcrypt from 'bcrypt'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 config({ path: join(__dirname, './docker/.env') })
@@ -17,12 +18,34 @@ const pool = new Pool({
 const getBoardData = async (boardId) => {
   try {
     const res = await pool.query('SELECT * FROM board WHERE id = $1', [boardId])
-    console.log('Данные из представления board:', res.rows)
-    return res.rows
+
+    if (res.rows.length === 0) {
+      return null
+    }
+
+    return res.rows[0]
   }
   catch (err) {
-    console.error('❌ Ошибка получения даннх из представления board}:', err.stack)
+    console.error('❌ Ошибка получения данных из представления board:', err.stack)
+    throw err
   }
 }
 
-export { getBoardData, pool }
+const findUserByEmail = async (email) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    )
+    return result.rows[0] || null
+  } catch (error) {
+    console.error('Ошибка при поиске пользователя:', error)
+    throw error
+  }
+}
+
+const verifyPassword = async (inputPassword, hashedPassword) => {
+  return await bcrypt.compare(inputPassword, hashedPassword)
+}
+
+export { getBoardData, findUserByEmail, verifyPassword, pool }

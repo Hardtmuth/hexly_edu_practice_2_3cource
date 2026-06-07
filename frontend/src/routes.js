@@ -1,0 +1,8 @@
+const apiPath = '/api/v1'
+export const SERVER = 'http://localhost:3000'
+
+export default {
+  authPath: () => [apiPath, 'auth', 'login'].join('/'),
+  userProjectsPath: (userId) => [apiPath, 'user', userId, 'list'].join('/'),
+  userBoardPath: (boardId) => [apiPath, 'board', boardId].join('/'),
+}
