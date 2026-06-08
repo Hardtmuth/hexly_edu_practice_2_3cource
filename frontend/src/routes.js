@@ -14,4 +14,6 @@ export default {
   moveColumnPath: columnId => [apiPath, 'columns', columnId, 'move'].join('/'),
   insertColumnPath: () => [apiPath, 'columns', 'insert'].join('/'),
   clearColumnPath: columnId => [apiPath, 'columns', columnId, 'clear'].join('/'),
+  createProjectPath: () => [apiPath, 'projects'].join('/'),
+  projectPath: projectId => [apiPath, 'projects', projectId].join('/'),
 }

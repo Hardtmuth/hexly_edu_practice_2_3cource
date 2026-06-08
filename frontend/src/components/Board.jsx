@@ -203,7 +203,7 @@ export const Board = () => {
 
   const renderCols = (colData) => {
     return colData.map((c, index) => {
-      if (!c.id) return null
+      if (!c || c.id === null || c.id === undefined) return null
 
       return (
         <Droppable droppableId={c.id.toString()} key={c.id.toString()}>

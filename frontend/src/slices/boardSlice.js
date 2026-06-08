@@ -183,13 +183,15 @@ const boardSlice = createSlice({
     },
     moveTaskOptimistic: (state, action) => {
       const { source, destination } = action.payload
-
+      if (!destination || !source) return
       state._previousBoardData = JSON.parse(JSON.stringify(state.boardData))
 
-      const sourceCol = state.boardData.cols.find(col => col.id.toString() === source.droppableId)
+      const sourceCol = state.boardData.cols.find(
+        col => col?.id?.toString() === source.droppableId,
+      )
       const destCol = state.boardData.cols.find(col => col.id.toString() === destination.droppableId)
 
-      if (sourceCol && destCol) {
+      if (sourceCol && destCol && sourceCol.tasks && destCol.tasks) {
         const [movedTask] = sourceCol.tasks.splice(source.index, 1)
         destCol.tasks.splice(destination.index, 0, movedTask)
       }
