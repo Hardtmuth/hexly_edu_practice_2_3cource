@@ -1,18 +1,17 @@
-import { Modal, TextInput, Textarea, Group, Button, Title } from '@mantine/core'
-
+import { Modal, TextInput, Textarea, Group, Button } from '@mantine/core'
 import { useTranslation } from 'react-i18next'
 
-export const TaskEditModal = ({ task, onClose, onSave }) => {
+export const TaskEditModal = ({ task, onClose, onSave, onDelete }) => {
   const { t } = useTranslation()
 
   const handleSubmit = (e) => {
     e.preventDefault()
 
     const formData = new FormData(e.currentTarget)
-    const newName = formData.get('task_name')
-    const newDesc = formData.get('task_description')
+    const newName = formData.get('name')
+    const newDesc = formData.get('description')
 
-    onSave(task.task_id, newName, newDesc)
+    onSave(task.id, newName, newDesc)
   }
 
   return (
@@ -25,8 +24,8 @@ export const TaskEditModal = ({ task, onClose, onSave }) => {
         <form onSubmit={handleSubmit}>
           <TextInput
             label={t('modals.editTask.name')}
-            name="task_name"
-            defaultValue={task.task_name}
+            name="name"
+            defaultValue={task.name}
             required
             mb="md"
             data-autofocus
@@ -34,8 +33,8 @@ export const TaskEditModal = ({ task, onClose, onSave }) => {
 
           <Textarea
             label={t('modals.editTask.description')}
-            name="task_description"
-            defaultValue={task.task_description}
+            name="description"
+            defaultValue={task.description} 
             rows={4}
             mb="xl"
           />
@@ -44,7 +43,7 @@ export const TaskEditModal = ({ task, onClose, onSave }) => {
             <Button
               variant="subtle"
               color="red"
-              onClick={() => console.log('Удалить задачу', task.task_id)}
+              onClick={() => onDelete(task.id)} 
             >
               {t('modals.editTask.btnDelete')}
             </Button>

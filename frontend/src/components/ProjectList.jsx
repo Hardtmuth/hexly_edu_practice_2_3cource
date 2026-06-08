@@ -15,15 +15,14 @@ export const ProjectList = () => {
   const navigate = useNavigate()
   const { projects, loading, error } = useSelector((state) => state.projects)
 
+  const { isAuthenticated, token } = useSelector((state) => state.auth)
   const { userId } = useParams()
-  console.log(userId)
-  console.log(projects)
 
   useEffect(() => {
-    if (userId) {
+    if (userId && (isAuthenticated || token || localStorage.getItem('token'))) {
       dispatch(fetchProjects(userId))
     }
-  }, [dispatch, userId])
+  }, [dispatch, userId, isAuthenticated, token])
 
   const handlerCard = (cardInfo) => {
     const boardId = cardInfo.id

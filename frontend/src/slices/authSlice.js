@@ -8,10 +8,10 @@ export const login = createAsyncThunk(
     try {
       const response = await axios.post(routes.authPath(), credentials)
 
-      localStorage.setItem('authToken', response.data.token)
+      localStorage.setItem('token', response.data.token)
       localStorage.setItem('userData', JSON.stringify(response.data.user))
 
-      return response.data.user
+      return response.data
     } catch (error) {
       if (error.response) {
         const errorMessage = error.response.data.error || 'Ошибка авторизации'
@@ -36,8 +36,8 @@ try {
 
 const initialState = {
   user: parsedUser,
-  token: localStorage.getItem('authToken'),
-  isAuthenticated: !!localStorage.getItem('authToken'),
+  token: localStorage.getItem('token'), 
+  isAuthenticated: !!localStorage.getItem('token'),
   loading: false,
   error: null,
 }
@@ -47,7 +47,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      localStorage.removeItem('authToken')
+      localStorage.removeItem('token')
       localStorage.removeItem('userData')
       state.user = null
       state.token = null

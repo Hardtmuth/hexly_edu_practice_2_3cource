@@ -4,22 +4,40 @@ import classes from '../../assets/styles/Header.module.css'
 
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Brand } from './Brand'
 import { ColorSchemeSwitcher } from './ColorSchemeSwitcher'
+import { logout } from '../slices/authSlice'
 
 export const Header = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const user = useSelector((state) => state.auth.user)
+  const userId = user?.id
 
   const handlerLogOut = () => {
-    console.log('You are logged out')
-    navigate('/')
+    console.log('Пользователь вышел из системы')
+    dispatch(logout())
+    navigate('/', { replace: true })
   }
 
   const handlerProjectsList = () => {
-    console.log('You are going to Project List')
-    navigate('/list')
+    if (!userId) {
+      console.error('ID пользователя не найден в состоянии')
+      navigate('/')
+      return
+    }
+    
+    console.log(`Переход к списку проектов пользователя: ${userId}`)
+    navigate(`/user/${userId}/list`)
+  }
+
+  const getUserInitials = () => {
+    if (!user?.name) return 'US'
+    return user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
   return (
@@ -38,7 +56,7 @@ export const Header = () => {
           <Brand />
 
           <Group visibleFrom="sm">
-            <Avatar color="indigo" radius="xl">US</Avatar>
+            <Avatar color="indigo" radius="xl">{getUserInitials()}</Avatar>
             <ColorSchemeSwitcher />
             <ActionIcon variant="default" size={36} onClick={handlerLogOut}>
               <IconLogout stroke={1} size={20} />

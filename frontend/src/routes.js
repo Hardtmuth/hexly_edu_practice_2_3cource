@@ -5,4 +5,7 @@ export default {
   authPath: () => [apiPath, 'auth', 'login'].join('/'),
   userProjectsPath: (userId) => [apiPath, 'user', userId, 'list'].join('/'),
   userBoardPath: (boardId) => [apiPath, 'board', boardId].join('/'),
+  moveTaskPath: () => [apiPath, 'tasks', 'move'].join('/'),
+  createTaskPath: () => [apiPath, 'tasks'].join('/'),
+  taskPath: (taskId) => [apiPath, 'tasks', taskId].join('/'),
 }

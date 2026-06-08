@@ -10,7 +10,7 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
-export const BoardColMenu = ({ onClearColumn, onDeleteColumn }) => {
+export const BoardColMenu = ({ onClearColumn, onDeleteColumn, onAddTask }) => {
   const { t } = useTranslation()
 
   return (
@@ -24,7 +24,7 @@ export const BoardColMenu = ({ onClearColumn, onDeleteColumn }) => {
       <Menu.Dropdown>
         <Menu.Item
           leftSection={<IconTicket size={14} />}
-          onClick={onClearColumn}
+          onClick={onAddTask}
         >
           {t('board.menu.addTask')}
         </Menu.Item>
