@@ -8,11 +8,12 @@ import { useParams } from 'react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 
-import { fetchBoard, clearBoard, moveTaskOptimistic, moveTask, updateTaskOnServer, deleteTaskOnServer, createTaskOnServer } from '../slices/boardSlice'
+import { fetchBoard, clearBoard, moveTaskOptimistic, moveTask, updateTaskOnServer, deleteTaskOnServer, createTaskOnServer, createColumnOnServer, deleteColumnOnServer } from '../slices/boardSlice'
 import { BoardColMenu } from './BoardColMenu'
 import { TaskEditModal } from './modals/TaskEditModal'
 import { TaskDeleteModal } from './modals/TaskDeleteModal'
 import { TaskCreateModal } from './modals/TaskCreateModal'
+import { ColumnCreateModal } from './modals/ColumnCreateModal'
 
 export const Board = () => {
   const { t } = useTranslation()
@@ -23,7 +24,9 @@ export const Board = () => {
   const [editingTask, setEditingTask] = useState(null)
   const [taskToDeleteId, setTaskToDeleteId] = useState(null)
   const [activeColumnForNewTask, setActiveColumnForNewTask] = useState(null)
-  const [hideControls, setHideControls] = useState(false);
+  const [hideControls, setHideControls] = useState(false)
+  const [isNewColModalOpen, setIsNewColModalOpen] = useState(false)
+  const [columnToDeleteId, setColumnToDeleteId] = useState(null)
 
   useEffect(() => {
     if (boardId) {
@@ -63,10 +66,6 @@ export const Board = () => {
     }))
   }
 
-  const handlerAddCol = () => {
-    console.log('Открытие модалки создания колонки')
-  }
-
   const handleDeleteTrigger = (taskId) => {
     setTaskToDeleteId(taskId)
   }
@@ -84,6 +83,33 @@ export const Board = () => {
       dispatch(deleteTaskOnServer(taskId))
       setEditingTask(null)
     }
+  }
+
+  const handleCreateColumn = (name) => {
+  console.log('2. handleCreateColumn вызван в Board.jsx с именем:', name)
+  
+  if (!boardId) {
+    console.error('Ошибка: boardId из useParams равен undefined!')
+    return
+  }
+
+  dispatch(createColumnOnServer({ 
+    projectId: parseInt(boardId, 10), 
+    name 
+  }))
+  
+  setIsNewColModalOpen(false)
+}
+
+  const handleConfirmDeleteColumn = () => {
+    if (columnToDeleteId) {
+      dispatch(deleteColumnOnServer(columnToDeleteId))
+      setColumnToDeleteId(null)
+    }
+  }
+
+  const handlerAddCol = () => {
+    setIsNewColModalOpen(true)
   }
 
   const renderTasks = (tasksData) => {
@@ -149,7 +175,7 @@ export const Board = () => {
                 <BoardColMenu
                   onAddTask={() => setActiveColumnForNewTask(c.id)}
                   onClearColumn={() => console.log(`Очистить колонку ${c.id}`)}
-                  onDeleteColumn={() => console.log(`Удалить колонку ${c.id}`)}
+                  onDeleteColumn={() => setColumnToDeleteId(c.id)}
                 />
               </Group>
 
@@ -242,16 +268,22 @@ export const Board = () => {
         onDelete={handleDeleteTrigger}
       />
 
-      <TaskDeleteModal
-        opened={taskToDeleteId !== null}
-        onClose={() => setTaskToDeleteId(null)}
-        onConfirm={handleConfirmDelete}
-      />
-
       <TaskCreateModal
         columnId={activeColumnForNewTask}
         onClose={() => setActiveColumnForNewTask(null)}
         onCreate={handleCreateTask}
+      />
+
+      <ColumnCreateModal
+        opened={isNewColModalOpen}
+        onClose={() => setIsNewColModalOpen(false)}
+        onCreate={handleCreateColumn}
+      />
+
+      <TaskDeleteModal
+        opened={columnToDeleteId !== null}
+        onClose={() => setColumnToDeleteId(null)}
+        onConfirm={handleConfirmDeleteColumn}
       />
     </Container>
   )

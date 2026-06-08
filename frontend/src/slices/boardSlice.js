@@ -96,6 +96,36 @@ export const createTaskOnServer = createAsyncThunk(
   }
 )
 
+export const createColumnOnServer = createAsyncThunk(
+  'board/createColumnOnServer',
+  async ({ projectId, name }, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token || localStorage.getItem('token')
+      const response = await axios.post(routes.createColumnPath(), { projectId, name }, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      return response.data.column
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.error || 'Ошибка при создании колонки')
+    }
+  }
+)
+
+export const deleteColumnOnServer = createAsyncThunk(
+  'board/deleteColumnOnServer',
+  async (columnId, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token || localStorage.getItem('token')
+      await axios.delete(routes.columnPath(columnId), {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      return columnId
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.error || 'Ошибка при удалении колонки')
+    }
+  }
+)
+
 const boardSlice = createSlice({
   name: 'board',
   initialState: {
@@ -170,6 +200,14 @@ const boardSlice = createSlice({
           if (!column.tasks) column.tasks = []
           column.tasks.push(newTask)
         }
+      })
+      .addCase(createColumnOnServer.fulfilled, (state, action) => {
+        if (!state.boardData.cols) state.boardData.cols = []
+        state.boardData.cols.push(action.payload)
+      })
+      .addCase(deleteColumnOnServer.fulfilled, (state, action) => {
+        const deletedColumnId = action.payload
+        state.boardData.cols = state.boardData.cols.filter(col => col.id !== deletedColumnId)
       })
   },
 })

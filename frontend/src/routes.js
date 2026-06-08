@@ -8,4 +8,6 @@ export default {
   moveTaskPath: () => [apiPath, 'tasks', 'move'].join('/'),
   createTaskPath: () => [apiPath, 'tasks'].join('/'),
   taskPath: (taskId) => [apiPath, 'tasks', taskId].join('/'),
+  createColumnPath: () => [apiPath, 'columns'].join('/'),
+  columnPath: (columnId) => [apiPath, 'columns', columnId].join('/'),
 }
