@@ -15,7 +15,7 @@ export const Header = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  const user = useSelector((state) => state.auth.user)
+  const user = useSelector(state => state.auth.user)
   const userId = user?.id
 
   const handlerLogOut = () => {
@@ -30,7 +30,7 @@ export const Header = () => {
       navigate('/')
       return
     }
-    
+
     console.log(`Переход к списку проектов пользователя: ${userId}`)
     navigate(`/user/${userId}/list`)
   }

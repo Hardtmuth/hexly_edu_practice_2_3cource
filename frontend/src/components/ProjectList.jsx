@@ -13,13 +13,13 @@ export const ProjectList = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { projects, loading, error } = useSelector((state) => state.projects)
+  const { projects } = useSelector(state => state.projects)
 
-  const { isAuthenticated, token } = useSelector((state) => state.auth)
+  const { isAuthenticated, token } = useSelector(state => state.auth)
   const { userId } = useParams()
 
   useEffect(() => {
-    if (userId && (isAuthenticated || token || localStorage.getItem('token'))) {
+    if (userId && userId !== 'undefined' && (isAuthenticated || token || localStorage.getItem('token'))) {
       dispatch(fetchProjects(userId))
     }
   }, [dispatch, userId, isAuthenticated, token])

@@ -6,30 +6,32 @@ export const fetchProjects = createAsyncThunk(
   'projects/fetchProjects',
   async (userId, { getState, rejectWithValue }) => {
     try {
-      const token = getState().auth.token || localStorage.getItem('token');
+      const token = getState().auth.token || localStorage.getItem('token')
 
       if (!token) {
-        return rejectWithValue('Токен авторизации отсутствует');
+        return rejectWithValue('Токен авторизации отсутствует')
       }
 
       const response = await axios.get(routes.userProjectsPath(userId), {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       })
       return response.data.projects
-
-    } catch (error) {
+    }
+    catch (error) {
       if (error.response) {
         const errorMessage = error.response.data.error || 'Ошибка загрузки проектов'
-        return rejectWithValue(errorMessage);
-      } else if (error.request) {
+        return rejectWithValue(errorMessage)
+      }
+      else if (error.request) {
         return rejectWithValue('Нет ответа от сервера')
-      } else {
+      }
+      else {
         return rejectWithValue('Ошибка сети')
       }
     }
-  }
+  },
 )
 
 const projectsSlice = createSlice({

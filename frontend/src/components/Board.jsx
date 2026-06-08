@@ -8,25 +8,47 @@ import { useParams } from 'react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 
-import { fetchBoard, clearBoard, moveTaskOptimistic, moveTask, updateTaskOnServer, deleteTaskOnServer, createTaskOnServer, createColumnOnServer, deleteColumnOnServer } from '../slices/boardSlice'
+import {
+  fetchBoard,
+  clearBoard,
+  moveTaskOptimistic,
+  moveTask,
+  updateTaskOnServer,
+  deleteTaskOnServer,
+  createTaskOnServer,
+  createColumnOnServer,
+  deleteColumnOnServer,
+  moveColumnOptimistic,
+  moveColumnOnServer,
+  renameColumnOnServer,
+  insertColumnOnServer,
+  clearColumnOnServer,
+} from '../slices/boardSlice'
+
 import { BoardColMenu } from './BoardColMenu'
 import { TaskEditModal } from './modals/TaskEditModal'
 import { TaskDeleteModal } from './modals/TaskDeleteModal'
 import { TaskCreateModal } from './modals/TaskCreateModal'
 import { ColumnCreateModal } from './modals/ColumnCreateModal'
+import { ColumnRenameModal } from './modals/ColumnRenameModal'
+import { ColumnDeleteModal } from './modals/ColumnDeleteModal'
+import { ColumnInsertModal } from './modals/ColumnInsertModal'
 
 export const Board = () => {
   const { t } = useTranslation()
   const { boardId } = useParams()
   const dispatch = useDispatch()
 
-  const { boardData, loading, error } = useSelector((state) => state.board)
+  const { boardData, loading, error } = useSelector(state => state.board)
   const [editingTask, setEditingTask] = useState(null)
   const [taskToDeleteId, setTaskToDeleteId] = useState(null)
   const [activeColumnForNewTask, setActiveColumnForNewTask] = useState(null)
   const [hideControls, setHideControls] = useState(false)
   const [isNewColModalOpen, setIsNewColModalOpen] = useState(false)
   const [columnToDeleteId, setColumnToDeleteId] = useState(null)
+  const [renamingColumn, setRenamingColumn] = useState(null)
+  const [insertColConfig, setInsertColConfig] = useState(null)
+  const [columnToClearId, setColumnToClearId] = useState(null)
 
   useEffect(() => {
     if (boardId) {
@@ -62,15 +84,15 @@ export const Board = () => {
       taskId: parseInt(draggableId, 10),
       fromColumnId: parseInt(source.droppableId, 10),
       toColumnId: parseInt(destination.droppableId, 10),
-      newIndex: destination.index
+      newIndex: destination.index,
     }))
   }
 
-  const handleDeleteTrigger = (taskId) => {
+  const handleDeleteTaskTrigger = (taskId) => {
     setTaskToDeleteId(taskId)
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDeleteTask = () => {
     if (taskToDeleteId) {
       dispatch(deleteTaskOnServer(taskToDeleteId))
       setTaskToDeleteId(null)
@@ -78,28 +100,21 @@ export const Board = () => {
     }
   }
 
-  const handleDeleteTask = (taskId) => {
-    if (window.confirm(t('modals.editTask.confirmDelete', 'Вы уверены, что хотите удалить эту задачу?'))) {
-      dispatch(deleteTaskOnServer(taskId))
-      setEditingTask(null)
-    }
-  }
-
   const handleCreateColumn = (name) => {
-  console.log('2. handleCreateColumn вызван в Board.jsx с именем:', name)
-  
-  if (!boardId) {
-    console.error('Ошибка: boardId из useParams равен undefined!')
-    return
+    if (!boardId) {
+      console.error('Ошибка: boardId из useParams равен undefined!')
+      return
+    }
+    dispatch(createColumnOnServer({
+      projectId: parseInt(boardId, 10),
+      name,
+    }))
+    setIsNewColModalOpen(false)
   }
 
-  dispatch(createColumnOnServer({ 
-    projectId: parseInt(boardId, 10), 
-    name 
-  }))
-  
-  setIsNewColModalOpen(false)
-}
+  const handleDeleteColumnTrigger = (columnId) => {
+    setColumnToDeleteId(columnId) // Открываем модалку удаления колонки
+  }
 
   const handleConfirmDeleteColumn = () => {
     if (columnToDeleteId) {
@@ -108,8 +123,41 @@ export const Board = () => {
     }
   }
 
+  const handleInsertTrigger = (referenceColumnId, direction) => {
+    setInsertColConfig({ referenceColumnId, direction })
+  }
+
+  const handleConfirmInsertColumn = (referenceColumnId, direction, name) => {
+    dispatch(insertColumnOnServer({ referenceColumnId, direction, name }))
+    setInsertColConfig(null)
+  }
+
   const handlerAddCol = () => {
     setIsNewColModalOpen(true)
+  }
+
+  const handleRenameColumn = (id, newName) => {
+    dispatch(renameColumnOnServer({ id, name: newName }))
+    setRenamingColumn(null)
+  }
+
+  const handleMoveColumn = (id, direction, index) => {
+    if (direction === 'left' && index === 0) return
+    if (direction === 'right' && index === boardData.cols.length - 1) return
+
+    dispatch(moveColumnOptimistic({ id, direction }))
+    dispatch(moveColumnOnServer({ id, direction }))
+  }
+
+  const handleClearColumnTrigger = (columnId) => {
+    setColumnToClearId(columnId)
+  }
+
+  const handleConfirmClearColumn = () => {
+    if (columnToClearId) {
+      dispatch(clearColumnOnServer(columnToClearId))
+      setColumnToClearId(null)
+    }
   }
 
   const renderTasks = (tasksData) => {
@@ -154,7 +202,7 @@ export const Board = () => {
   }
 
   const renderCols = (colData) => {
-    return colData.map((c) => {
+    return colData.map((c, index) => {
       if (!c.id) return null
 
       return (
@@ -174,8 +222,13 @@ export const Board = () => {
 
                 <BoardColMenu
                   onAddTask={() => setActiveColumnForNewTask(c.id)}
-                  onClearColumn={() => console.log(`Очистить колонку ${c.id}`)}
-                  onDeleteColumn={() => setColumnToDeleteId(c.id)}
+                  onRename={() => setRenamingColumn(c)}
+                  onMoveLeft={() => handleMoveColumn(c.id, 'left', index)}
+                  onMoveRight={() => handleMoveColumn(c.id, 'right', index)}
+                  onAddLeft={() => handleInsertTrigger(c.id, 'left')}
+                  onAddRight={() => handleInsertTrigger(c.id, 'right')}
+                  onDeleteColumn={() => handleDeleteColumnTrigger(c.id)}
+                  onClearColumn={() => handleClearColumnTrigger(c.id)}
                 />
               </Group>
 
@@ -208,7 +261,14 @@ export const Board = () => {
   }
 
   if (loading) return <Center mt="xl"><Text size="lg">Загрузка доски...</Text></Center>
-  if (error) return <Center mt="xl"><Text color="red" size="lg">Ошибка: {error}</Text></Center>
+  if (error) return (
+    <Center mt="xl">
+      <Text color="red" size="lg">
+        Ошибка:
+        {error}
+      </Text>
+    </Center>
+  )
   if (!boardData) return <Center mt="xl"><Text size="lg">Доска не найдена</Text></Center>
 
   return (
@@ -229,9 +289,9 @@ export const Board = () => {
           position="top"
           openDelay={300}
         >
-          <ActionIcon 
+          <ActionIcon
             variant={hideControls ? 'filled' : 'light'}
-            size="lg" 
+            size="lg"
             color={hideControls ? 'indigo' : 'gray'}
             onClick={() => setHideControls(prev => !prev)}
           >
@@ -265,7 +325,7 @@ export const Board = () => {
         task={editingTask}
         onClose={() => setEditingTask(null)}
         onSave={handleSaveTask}
-        onDelete={handleDeleteTrigger}
+        onDelete={handleDeleteTaskTrigger}
       />
 
       <TaskCreateModal
@@ -281,9 +341,36 @@ export const Board = () => {
       />
 
       <TaskDeleteModal
+        opened={taskToDeleteId !== null}
+        onClose={() => setTaskToDeleteId(null)}
+        onConfirm={handleConfirmDeleteTask}
+      />
+
+      <ColumnRenameModal
+        key={renamingColumn?.id || 'empty'}
+        column={renamingColumn}
+        onClose={() => setRenamingColumn(null)}
+        onRename={handleRenameColumn}
+      />
+
+      <ColumnInsertModal
+        config={insertColConfig}
+        onClose={() => setInsertColConfig(null)}
+        onInsert={handleConfirmInsertColumn}
+      />
+
+      <ColumnDeleteModal
         opened={columnToDeleteId !== null}
         onClose={() => setColumnToDeleteId(null)}
         onConfirm={handleConfirmDeleteColumn}
+      />
+
+      <ColumnDeleteModal
+        opened={columnToClearId !== null}
+        onClose={() => setColumnToClearId(null)}
+        onConfirm={handleConfirmClearColumn}
+        title={t('modals.clearColumn.title', 'Очистить колонку')}
+        message={t('modals.clearColumn.message', 'Вы уверены, что хотите удалить ВСЕ задачи из этой колонки? Это действие нельзя отменить.')}
       />
     </Container>
   )

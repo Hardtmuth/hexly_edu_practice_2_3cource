@@ -12,17 +12,20 @@ export const login = createAsyncThunk(
       localStorage.setItem('userData', JSON.stringify(response.data.user))
 
       return response.data
-    } catch (error) {
+    }
+    catch (error) {
       if (error.response) {
         const errorMessage = error.response.data.error || 'Ошибка авторизации'
-        return rejectWithValue(errorMessage);
-      } else if (error.request) {
+        return rejectWithValue(errorMessage)
+      }
+      else if (error.request) {
         return rejectWithValue('Нет ответа от сервера')
-      } else {
+      }
+      else {
         return rejectWithValue('Ошибка сети')
       }
     }
-  }
+  },
 )
 
 const savedUser = localStorage.getItem('userData')
@@ -30,13 +33,14 @@ let parsedUser = null
 
 try {
   parsedUser = savedUser ? JSON.parse(savedUser) : null
-} catch (e) {
-  console.error("Ошибка парсинга userData из localStorage", e)
+}
+catch (e) {
+  console.error('Ошибка парсинга userData из localStorage', e)
 }
 
 const initialState = {
   user: parsedUser,
-  token: localStorage.getItem('token'), 
+  token: localStorage.getItem('token'),
   isAuthenticated: !!localStorage.getItem('token'),
   loading: false,
   error: null,
@@ -53,7 +57,7 @@ const authSlice = createSlice({
       state.token = null
       state.isAuthenticated = false
       state.error = null
-    }
+    },
   },
   extraReducers: (builder) => {
     builder

@@ -34,7 +34,7 @@ export const TaskEditModal = ({ task, onClose, onSave, onDelete }) => {
           <Textarea
             label={t('modals.editTask.description')}
             name="description"
-            defaultValue={task.description} 
+            defaultValue={task.description}
             rows={4}
             mb="xl"
           />
@@ -43,7 +43,7 @@ export const TaskEditModal = ({ task, onClose, onSave, onDelete }) => {
             <Button
               variant="subtle"
               color="red"
-              onClick={() => onDelete(task.id)} 
+              onClick={() => onDelete(task.id)}
             >
               {t('modals.editTask.btnDelete')}
             </Button>

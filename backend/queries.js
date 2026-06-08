@@ -35,10 +35,11 @@ const findUserByEmail = async (email) => {
   try {
     const result = await pool.query(
       'SELECT * FROM users WHERE email = $1',
-      [email]
+      [email],
     )
     return result.rows[0] || null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Ошибка при поиске пользователя:', error)
     throw error
   }

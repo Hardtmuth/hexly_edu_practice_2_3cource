@@ -25,25 +25,25 @@ const server = () => {
       const user = await findUserByEmail(email)
       if (!user) {
         return reply.status(401).send({
-          error: 'Пользователь не найден'
+          error: 'Пользователь не найден',
         })
       }
 
       const isPasswordValid = await verifyPassword(password, user.password)
       if (!isPasswordValid) {
         return reply.status(401).send({
-          error: 'Неверный пароль'
+          error: 'Неверный пароль',
         })
       }
 
       const token = jwt.sign(
         {
           userId: user.id,
-          email: user.email
+          email: user.email,
         },
         process.env.JWT_SECRET || 'secret-key',
-        { expiresIn: '24h' }
-      );
+        { expiresIn: '24h' },
+      )
 
       reply.send({
         token,
@@ -51,9 +51,10 @@ const server = () => {
           id: user.id,
           name: user.name,
           email: user.email,
-        }
+        },
       })
-    } catch (error) {
+    }
+    catch (error) {
       app.log.error(error)
       reply.status(500).send({ error: 'Внутренняя ошибка сервера' })
     }
@@ -61,8 +62,19 @@ const server = () => {
 
   app.get(getPath('user/:id/list'), async (request, reply) => {
     const { id } = request.params
-    const projects = await pool.query('SELECT id, name, description FROM projects WHERE owner_id = $1', [id])
-    reply.send({ projects: projects.rows })
+
+    if (id === 'undefined' || isNaN(Number(id))) {
+      return reply.status(400).send({ error: 'Некорректный идентификатор пользователя' })
+    }
+
+    try {
+      const projects = await pool.query('SELECT id, name, description FROM projects WHERE owner_id = $1', [id])
+      reply.send({ projects: projects.rows })
+    }
+    catch (error) {
+      app.log.error(error)
+      reply.status(500).send({ error: 'Ошибка базы данных при получении проектов' })
+    }
   })
 
   app.get(getPath('board/:id'), async (request, reply) => {
@@ -75,7 +87,8 @@ const server = () => {
       }
 
       reply.send(boardData)
-    } catch (error) {
+    }
+    catch {
       reply.status(500).send({ error: 'Ошибка сервера при получении доски' })
     }
   })
@@ -108,11 +121,13 @@ const server = () => {
 
       await client.query('COMMIT')
       reply.send({ success: true })
-    } catch (error) {
+    }
+    catch (error) {
       await client.query('ROLLBACK')
       app.log.error(error)
       reply.status(500).send({ error: 'Не удалось переместить задачу' })
-    } finally {
+    }
+    finally {
       client.release()
     }
   })
@@ -127,7 +142,7 @@ const server = () => {
          SET title = $1, description = $2 
          WHERE id = $3 
          RETURNING id, column_id, position, status, title AS name, description`,
-        [name, description, id]
+        [name, description, id],
       )
 
       if (result.rows.length === 0) {
@@ -135,7 +150,8 @@ const server = () => {
       }
 
       reply.send({ success: true, task: result.rows[0] })
-    } catch (error) {
+    }
+    catch (error) {
       app.log.error(error)
       reply.status(500).send({ error: 'Внутренняя ошибка сервера при обновлении задачи' })
     }
@@ -161,16 +177,18 @@ const server = () => {
 
       await client.query(
         'UPDATE tasks SET position = position - 1 WHERE column_id = $1 AND position > $2',
-        [column_id, position]
+        [column_id, position],
       )
 
       await client.query('COMMIT')
       reply.send({ success: true, taskId: parseInt(id, 10) })
-    } catch (error) {
+    }
+    catch (error) {
       await client.query('ROLLBACK')
       app.log.error(error)
       reply.status(500).send({ error: 'Внутренняя ошибка сервера при удалении задачи' })
-    } finally {
+    }
+    finally {
       client.release()
     }
   })
@@ -189,11 +207,12 @@ const server = () => {
            'todo'
          )
          RETURNING id, column_id, position, status, title AS name, description`,
-        [columnId, name, description]
+        [columnId, name, description],
       )
 
       reply.status(201).send({ success: true, task: result.rows[0] })
-    } catch (error) {
+    }
+    catch (error) {
       app.log.error(error)
       reply.status(500).send({ error: 'Не удалось создать задачу' })
     }
@@ -207,17 +226,17 @@ const server = () => {
         `INSERT INTO columns (project_id, name, position)
          VALUES ($1, $2, (SELECT COALESCE(MAX(position), 0) + 1 FROM columns WHERE project_id = $1))
          RETURNING id, name, position`,
-        [projectId, name]
+        [projectId, name],
       )
-      
-      // Собираем объект ОДНОЙ колонки, беря result.rows[0] вместо всего массива rows
+
       const newColumn = {
-        ...result.rows[0], // ИСПРАВЛЕНО: добавили [0]
-        tasks: []
+        ...result.rows[0],
+        tasks: [],
       }
-      
+
       reply.status(201).send({ success: true, column: newColumn })
-    } catch (error) {
+    }
+    catch (error) {
       app.log.error(error)
       reply.status(500).send({ error: 'Не удалось создать колонку' })
     }
@@ -243,17 +262,119 @@ const server = () => {
 
       await client.query(
         'UPDATE columns SET position = position - 1 WHERE project_id = $1 AND position > $2',
-        [project_id, position]
+        [project_id, position],
       )
 
       await client.query('COMMIT')
       reply.send({ success: true, columnId: parseInt(id, 10) })
-    } catch (error) {
+    }
+    catch (error) {
       await client.query('ROLLBACK')
       app.log.error(error)
       reply.status(500).send({ error: 'Не удалось удалить колонку' })
-    } finally {
+    }
+    finally {
       client.release()
+    }
+  })
+
+  app.patch(getPath('columns/:id/rename'), async (request, reply) => {
+    try {
+      const { id } = request.params
+      const { name } = request.body
+      await pool.query('UPDATE columns SET name = $1 WHERE id = $2', [name, id])
+      reply.send({ success: true, columnId: parseInt(id, 10), name })
+    }
+    catch {
+      reply.status(500).send({ error: 'Не удалось переименовать колонку' })
+    }
+  })
+
+  app.put(getPath('columns/:id/move'), async (request, reply) => {
+    const client = await pool.connect()
+    try {
+      const { id } = request.params
+      const { direction } = request.body // left, right
+
+      await client.query('BEGIN')
+
+      const currentRes = await client.query('SELECT project_id, position FROM columns WHERE id = $1', [id])
+      if (currentRes.rows.length === 0) return reply.status(404).send({ error: 'Колонка не найдена' })
+
+      const { project_id, position } = currentRes.rows[0]
+      const targetPosition = direction === 'left' ? position - 1 : position + 1
+
+      await client.query(
+        'UPDATE columns SET position = $1 WHERE project_id = $2 AND position = $3',
+        [position, project_id, targetPosition],
+      )
+
+      await client.query('UPDATE columns SET position = $1 WHERE id = $2', [targetPosition, id])
+
+      await client.query('COMMIT')
+      reply.send({ success: true, columnId: parseInt(id, 10), direction })
+    }
+    catch {
+      await client.query('ROLLBACK')
+      reply.status(500).send({ error: 'Не удалось переместить колонку' })
+    }
+    finally {
+      client.release()
+    }
+  })
+
+  app.post(getPath('columns/insert'), async (request, reply) => {
+    const client = await pool.connect()
+    try {
+      const { referenceColumnId, direction, name } = request.body
+
+      await client.query('BEGIN')
+
+      const refRes = await client.query('SELECT project_id, position FROM columns WHERE id = $1', [referenceColumnId])
+      const { project_id, position } = refRes.rows[0]
+
+      const insertPosition = direction === 'left' ? position : position + 1
+
+      await client.query(
+        'UPDATE columns SET position = position + 1 WHERE project_id = $1 AND position >= $2',
+        [project_id, insertPosition],
+      )
+
+      const result = await client.query(
+        'INSERT INTO columns (project_id, name, position) VALUES ($1, $2, $3) RETURNING id, name, position',
+        [project_id, name, insertPosition],
+      )
+
+      await client.query('COMMIT')
+      reply.status(201).send({ success: true, column: { ...result.rows[0], tasks: [] } })
+    }
+    catch {
+      await client.query('ROLLBACK')
+      reply.status(500).send({ error: 'Не удалось вставить колонку' })
+    }
+    finally {
+      client.release()
+    }
+  })
+
+  app.delete(getPath('columns/:id/clear'), async (request, reply) => {
+    try {
+      const { id } = request.params
+
+      const result = await pool.query(
+        'DELETE FROM tasks WHERE column_id = $1 RETURNING column_id',
+        [id],
+      )
+
+      reply.send({
+        success: true,
+        columnId: parseInt(id, 10),
+        deletedCount: result.rowCount,
+      })
+    }
+    catch (error) {
+      app.log.error(error)
+      reply.status(500).send({ error: 'Не удалось очистить колонку' })
     }
   })
 

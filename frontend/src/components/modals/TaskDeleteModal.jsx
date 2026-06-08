@@ -12,7 +12,7 @@ export const TaskDeleteModal = ({ opened, onClose, onConfirm }) => {
       centered
       size="sm"
       radius="md"
-      zIndex={3000} 
+      zIndex={3000}
     >
       <Stack gap="md">
         <Text size="sm">
