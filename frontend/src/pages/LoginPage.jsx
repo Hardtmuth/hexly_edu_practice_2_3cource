@@ -4,7 +4,7 @@ import { IconLayoutKanban } from '@tabler/icons-react'
 
 import { useTranslation } from 'react-i18next'
 
-import { SignInForm } from '../components/SignInForm'
+import { SignInForm } from '../components/SignInUpForm'
 
 export const LoginPage = () => {
   const { t } = useTranslation()
@@ -39,7 +39,7 @@ export const LoginPage = () => {
           <Grid.Col span={3}>
           </Grid.Col>
           <Grid.Col span={2} mt={80}>
-            <Group>
+            <Group mb="lg">
               <IconLayoutKanban size={30} color="var(--mantine-color-indigo-6)" />
               <Text size="xl" c="indigo.6">
                 {t('loginPage.brand')}

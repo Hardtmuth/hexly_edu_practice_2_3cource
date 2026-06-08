@@ -1,6 +1,7 @@
 import fastify from 'fastify'
 import jwt from 'jsonwebtoken'
-import { pool, getBoardData, findUserByEmail, verifyPassword } from './queries.js'
+import bcrypt from 'bcrypt'
+import { pool, getBoardData, findUserByEmail, verifyPassword, createUser, updateUser, deleteUser } from './queries.js'
 
 const apiPath = '/api/v1'
 const getPath = keyword => [apiPath, keyword].join('/')
@@ -432,6 +433,121 @@ const server = () => {
     }
     catch {
       reply.status(500).send({ error: 'Не удалось удалить проект' })
+    }
+  })
+
+  app.post(getPath('auth/register'), async (request, reply) => {
+    try {
+      const { name, email, password } = request.body
+
+      const existingUser = await findUserByEmail(email)
+      if (existingUser) {
+        return reply.status(400).send({
+          error: 'Пользователь с таким email уже зарегистрирован'
+        })
+      }
+
+      const saltRounds = 10
+      const hashedPassword = await bcrypt.hash(password, saltRounds)
+
+      const newUser = await createUser(name, email, hashedPassword)
+
+      const token = jwt.sign(
+        { userId: newUser.id, email: newUser.email },
+        process.env.JWT_SECRET || 'secret-key',
+        { expiresIn: '24h' }
+      )
+
+      reply.status(201).send({
+        token,
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email
+        }
+      })
+    } catch (error) {
+      app.log.error(error)
+      reply.status(500).send({ error: 'Внутренняя ошибка сервера' })
+    }
+  })
+
+  app.delete(getPath('auth/delete-account'), async (request, reply) => {
+    try {
+      const authHeader = request.headers.authorization
+      if (!authHeader) {
+        return reply.status(401).send({ error: 'Токен отсутствует' })
+      }
+
+      const token = authHeader.split(' ')[1]
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret-key')
+
+      const isDeleted = await deleteUser(decoded.userId)
+
+      if (!isDeleted) {
+        return reply.status(404).send({ error: 'Пользователь не найден' })
+      }
+
+      reply.send({ message: 'Аккаунт успешно удален' })
+    }
+    catch (error) {
+      if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+        return reply.status(401).send({ error: 'Сессия устарела или токен невалиден' })
+      }
+      app.log.error(error)
+      return reply.status(500).send({ error: 'Внутренняя ошибка сервера' })
+    }
+  })
+
+  app.put(getPath('auth/update-account'), async (request, reply) => {
+    try {
+      const authHeader = request.headers.authorization
+      if (!authHeader) {
+        return reply.status(401).send({ error: 'Токен отсутствует' })
+      }
+
+      const token = authHeader.split(' ')[1]
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret-key')
+
+      const { column, value } = request.body
+
+      if (!column || value === undefined) {
+        return reply.status(400).send({ error: 'Необходимо указать column и value' })
+      }
+
+      const allowedColumns = ['name', 'email', 'password']
+      if (!allowedColumns.includes(column)) {
+        return reply.status(400).send({ error: 'Запрещено редактировать данное поле' })
+      }
+
+      if (column === 'email') {
+        const existingUser = await findUserByEmail(value)
+        if (existingUser && existingUser.id !== decoded.userId) {
+          return reply.status(400).send({ error: 'Этот email уже занят другим пользователем' })
+        }
+      }
+
+      const updatedUser = await updateUser(decoded.userId, column, value)
+
+      if (!updatedUser) {
+        return reply.status(404).send({ error: 'Пользователь не найден' })
+      }
+
+      reply.send({
+        user: {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+        },
+      })
+    }
+    catch (error) {
+      if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+        return reply.status(401).send({ error: 'Сессия устарела или токен невалиден' })
+      }
+
+      app.log.error(error)
+      reply.status(500).send({ error: 'Внутренняя ошибка сервера' })
     }
   })
 

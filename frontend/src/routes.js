@@ -16,4 +16,7 @@ export default {
   clearColumnPath: columnId => [apiPath, 'columns', columnId, 'clear'].join('/'),
   createProjectPath: () => [apiPath, 'projects'].join('/'),
   projectPath: projectId => [apiPath, 'projects', projectId].join('/'),
+  registerPath: () => [apiPath, 'auth', 'register'].join('/'),
+  deleteAccountPath: () => [apiPath, 'auth', 'delete-account'].join('/'),
+  updateAccountPath: () => [apiPath, 'auth', 'update-account'].join('/'),
 }

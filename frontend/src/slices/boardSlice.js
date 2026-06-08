@@ -217,7 +217,11 @@ const boardSlice = createSlice({
       })
       .addCase(fetchBoard.fulfilled, (state, action) => {
         state.loading = false
-        state.boardData = action.payload
+        const fetchedData = action.payload
+        if (fetchedData && fetchedData.cols) {
+          fetchedData.cols = fetchedData.cols.filter(col => col && col.id !== null && col.id !== undefined)
+        }
+        state.boardData = fetchedData
       })
       .addCase(fetchBoard.rejected, (state, action) => {
         state.loading = false

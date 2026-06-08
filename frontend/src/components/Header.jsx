@@ -2,13 +2,18 @@ import { Box, Button, Group, Avatar, ActionIcon } from '@mantine/core'
 import { IconLogout, IconDeviceIpadHorizontal } from '@tabler/icons-react'
 import classes from '../../assets/styles/Header.module.css'
 
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Brand } from './Brand'
 import { ColorSchemeSwitcher } from './ColorSchemeSwitcher'
-import { logout } from '../slices/authSlice'
+import { logout, updateAccountOnServer, deleteAccountOnServer } from '../slices/authSlice'
+
+import { UserMenu } from './UserMenu'
+import { ProfileEditModal } from './modals/ProfileEditModal'
+import { ColumnDeleteModal } from './modals/ColumnDeleteModal'
 
 export const Header = () => {
   const { t } = useTranslation()
@@ -17,6 +22,9 @@ export const Header = () => {
 
   const user = useSelector(state => state.auth.user)
   const userId = user?.id
+
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
   const handlerLogOut = () => {
     console.log('Пользователь вышел из системы')
@@ -35,9 +43,18 @@ export const Header = () => {
     navigate(`/user/${userId}/list`)
   }
 
-  const getUserInitials = () => {
-    if (!user?.name) return 'US'
-    return user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  const handleSaveProfile = (column, value) => {
+    dispatch(updateAccountOnServer({ column, value }))
+    setIsEditOpen(false)
+  }
+
+  const handleConfirmDeleteAccount = () => {
+    dispatch(deleteAccountOnServer())
+      .unwrap()
+      .then(() => {
+        setIsDeleteOpen(false)
+        navigate('/', { replace: true })
+      })
   }
 
   return (
@@ -56,7 +73,12 @@ export const Header = () => {
           <Brand />
 
           <Group visibleFrom="sm">
-            <Avatar color="indigo" radius="xl">{getUserInitials()}</Avatar>
+            <UserMenu
+              user={user}
+              onEditClick={() => setIsEditOpen(true)}
+              onDeleteClick={() => setIsDeleteOpen(true)}
+              onLogoutClick={handlerLogOut}
+            />
             <ColorSchemeSwitcher />
             <ActionIcon variant="default" size={36} onClick={handlerLogOut}>
               <IconLogout stroke={1} size={20} />
@@ -64,6 +86,21 @@ export const Header = () => {
           </Group>
         </Group>
       </header>
+      <ProfileEditModal
+        key={user?.id || 'empty'}
+        user={user}
+        opened={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onSave={handleSaveProfile}
+      />
+
+      <ColumnDeleteModal
+        opened={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={handleConfirmDeleteAccount}
+        title={t('modals.deleteAccount.title', 'Удаление аккаунта')}
+        message={t('modals.deleteAccount.message', 'Вы уверены, что хотите НАВСЕГДА удалить свой аккаунт? Все ваши проекты, доски, колонки и задачи будут безвозвратно стерты из базы данных. Это действие нельзя отменить.')}
+      />
     </Box>
   )
 }
