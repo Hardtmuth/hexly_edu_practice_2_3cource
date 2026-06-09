@@ -12,7 +12,7 @@ export const ProjectCreateModal = ({ opened, onClose, onCreate }) => {
   }
 
   return (
-    <Modal opened={opened} onClose={onClose} title={t('modals.createProject.title', 'Создать проект')} centered>
+    <Modal opened={opened} onClose={onClose} title={t('modals.createProject.title', 'Создать проект')}>
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
           <TextInput label={t('modals.createProject.name', 'Название')} name="name" required placeholder={t('modals.createProject.namePl', 'Введите название проекта')} data-autofocus />

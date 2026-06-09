@@ -1,5 +1,5 @@
-import { Box, Button, Group, Avatar, ActionIcon } from '@mantine/core'
-import { IconLogout, IconDeviceIpadHorizontal } from '@tabler/icons-react'
+import { Box, Button, Group, Avatar, ActionIcon, Alert } from '@mantine/core'
+import { IconLogout, IconDeviceIpadHorizontal, IconCheck } from '@tabler/icons-react'
 import classes from '../../assets/styles/Header.module.css'
 
 import { useState } from 'react'
@@ -14,6 +14,8 @@ import { logout, updateAccountOnServer, deleteAccountOnServer } from '../slices/
 import { UserMenu } from './UserMenu'
 import { ProfileEditModal } from './modals/ProfileEditModal'
 import { ColumnDeleteModal } from './modals/ColumnDeleteModal'
+import { EmailEditModal } from './modals/EmailEditModal'
+import { PasswordEditModal } from './modals/PasswordEditModal'
 
 export const Header = () => {
   const { t } = useTranslation()
@@ -25,6 +27,10 @@ export const Header = () => {
 
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isEmailOpen, setIsEmailOpen] = useState(false)
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false)
+  const [serverEmailError, setServerEmailError] = useState(null)
+  const [successMessage, setSuccessMessage] = useState(null)
 
   const handlerLogOut = () => {
     console.log('Пользователь вышел из системы')
@@ -44,8 +50,30 @@ export const Header = () => {
   }
 
   const handleSaveProfile = (column, value) => {
+    setServerEmailError(null)
+
     dispatch(updateAccountOnServer({ column, value }))
-    setIsEditOpen(false)
+      .unwrap()
+      .then(() => {
+        let msg = t('profile.success.name', 'Имя успешно обновлено!')
+        if (column === 'email') msg = t('profile.success.email', 'Email успешно изменен!')
+        if (column === 'password') msg = t('profile.success.password', 'Пароль успешно изменен!')
+
+        setSuccessMessage(msg)
+        
+        setIsEditOpen(false)
+        setIsEmailOpen(false)
+        setIsPasswordOpen(false)
+
+        setTimeout(() => setSuccessMessage(null), 3000)
+      })
+      .catch((errorMsg) => {
+        if (column === 'email') {
+          setServerEmailError(errorMsg)
+        } else {
+          console.error('Ошибка обновления профиля:', errorMsg)
+        }
+      })
   }
 
   const handleConfirmDeleteAccount = () => {
@@ -59,6 +87,16 @@ export const Header = () => {
 
   return (
     <Box pb={30}>
+      {successMessage && (
+        <Alert 
+          variant="filled" 
+          color="teal" 
+          icon={<IconCheck size={16} />}
+          style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, boxShadow: 'var(--mantine-shadow-md)' }}
+        >
+          {successMessage}
+        </Alert>
+      )}
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
           <Group visibleFrom="sm">
@@ -78,6 +116,8 @@ export const Header = () => {
               onEditClick={() => setIsEditOpen(true)}
               onDeleteClick={() => setIsDeleteOpen(true)}
               onLogoutClick={handlerLogOut}
+              onEmailClick={() => setIsEmailOpen(true)}
+              onPasswordClick={() => setIsPasswordOpen(true)}
             />
             <ColorSchemeSwitcher />
             <ActionIcon variant="default" size={36} onClick={handlerLogOut}>
@@ -86,13 +126,20 @@ export const Header = () => {
           </Group>
         </Group>
       </header>
-      <ProfileEditModal
-        key={user?.id || 'empty'}
-        user={user}
-        opened={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        onSave={handleSaveProfile}
+
+      <ProfileEditModal key={`name-${user?.id}`} user={user} opened={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={handleSaveProfile} />
+
+      <EmailEditModal 
+        key={`email-${user?.id}`} 
+        user={user} 
+        opened={isEmailOpen} 
+        onClose={() => { setIsEmailOpen(false); setServerEmailError(null); }} 
+        onSave={handleSaveProfile} 
+        error={serverEmailError}
+        clearError={() => setServerEmailError(null)}
       />
+
+      <PasswordEditModal opened={isPasswordOpen} onClose={() => setIsPasswordOpen(false)} onSave={handleSaveProfile} />
 
       <ColumnDeleteModal
         opened={isDeleteOpen}

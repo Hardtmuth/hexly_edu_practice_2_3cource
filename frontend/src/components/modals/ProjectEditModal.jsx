@@ -13,7 +13,7 @@ export const ProjectEditModal = ({ project, onClose, onSave, onDelete }) => {
   }
 
   return (
-    <Modal opened={project !== null} onClose={onClose} title={t('modals.editProject.title', 'Редактировать проект')} centered>
+    <Modal opened={project !== null} onClose={onClose} title={t('modals.editProject.title', 'Редактировать проект')}>
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
           <TextInput label={t('modals.editProject.name', 'Название')} value={name} onChange={e => setName(e.target.value)} required data-autofocus />

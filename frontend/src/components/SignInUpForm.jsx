@@ -77,13 +77,6 @@ export const SignInForm = () => {
     },
   })
 
-  const inputStyles = {
-    input: {
-      backgroundColor: 'var(--mantine-color-indigo-8)',
-      borderColor: 'var(--mantine-color-indigo-9)',
-    },
-  }
-
   const handleTypeChange = (type) => {
     setFormType(type)
     setServerError(null)
@@ -107,7 +100,6 @@ export const SignInForm = () => {
         )}
         {formType === 'register' && (
           <TextInput
-            styles={inputStyles}
             placeholder={t('loginPage.form.namePlaceholder', 'Имя')}
             rightSection={<IconUser size={16} />}
             key={form.key('name')}
@@ -121,7 +113,6 @@ export const SignInForm = () => {
         )}
 
         <TextInput
-          styles={inputStyles}
           placeholder="Email"
           rightSection={<IconAt size={16} />}
           key={form.key('email')}
@@ -133,7 +124,6 @@ export const SignInForm = () => {
         />
 
         <PasswordInput
-          styles={inputStyles}
           mt="md"
           placeholder="Пароль"
           key={form.key('password')}
@@ -146,7 +136,6 @@ export const SignInForm = () => {
 
         {formType === 'register' && (
           <PasswordInput
-            styles={inputStyles}
             mt="md"
             placeholder={t('loginPage.form.confirmPasswordPlaceholder', 'Подтвердите пароль')}
             key={form.key('confirmPassword')}

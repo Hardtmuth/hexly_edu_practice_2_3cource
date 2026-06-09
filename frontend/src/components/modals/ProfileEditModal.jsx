@@ -16,7 +16,6 @@ export const ProfileEditModal = ({ user, opened, onClose, onSave }) => {
       opened={opened}
       onClose={onClose}
       title={t('modals.profile.editTitle', 'Редактировать профиль')}
-      centered
     >
       <form onSubmit={handleSubmit}>
         <Stack gap="md">

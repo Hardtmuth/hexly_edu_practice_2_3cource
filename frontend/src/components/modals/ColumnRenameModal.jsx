@@ -19,7 +19,6 @@ export const ColumnRenameModal = ({ column, onClose, onRename }) => {
       opened={column !== null}
       onClose={onClose}
       title={t('modals.renameColumn.title', 'Переименовать колонку')}
-      centered
     >
       <form onSubmit={handleSubmit}>
         <Stack gap="md">

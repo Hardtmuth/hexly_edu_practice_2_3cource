@@ -16,7 +16,6 @@ export const ColumnCreateModal = ({ opened, onClose, onCreate }) => {
       opened={opened}
       onClose={onClose}
       title={t('modals.createColumn.title', 'Создать новую колонку')}
-      centered
     >
       <form onSubmit={handleSubmit}>
         <Stack gap="md">

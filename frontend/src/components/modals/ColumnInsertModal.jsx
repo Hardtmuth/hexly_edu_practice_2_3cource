@@ -27,7 +27,6 @@ export const ColumnInsertModal = ({ config, onClose, onInsert }) => {
       opened={config !== null}
       onClose={onClose}
       title={getModalTitle()}
-      centered
     >
       <form onSubmit={handleSubmit}>
         <Stack gap="md">

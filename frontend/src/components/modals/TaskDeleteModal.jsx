@@ -9,7 +9,6 @@ export const TaskDeleteModal = ({ opened, onClose, onConfirm }) => {
       opened={opened}
       onClose={onClose}
       title={t('modals.deleteTask.title', 'Удаление задачи')}
-      centered
       size="sm"
       radius="md"
       zIndex={3000}

@@ -502,14 +502,12 @@ const server = () => {
   app.put(getPath('auth/update-account'), async (request, reply) => {
     try {
       const authHeader = request.headers.authorization
-      if (!authHeader) {
-        return reply.status(401).send({ error: 'Токен отсутствует' })
-      }
+      if (!authHeader) return reply.status(401).send({ error: 'Токен отсутствует' })
 
       const token = authHeader.split(' ')[1]
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret-key')
 
-      const { column, value } = request.body
+      let { column, value } = request.body
 
       if (!column || value === undefined) {
         return reply.status(400).send({ error: 'Необходимо указать column и value' })
@@ -527,25 +525,28 @@ const server = () => {
         }
       }
 
-      const updatedUser = await updateUser(decoded.userId, column, value)
-
-      if (!updatedUser) {
-        return reply.status(404).send({ error: 'Пользователь не найден' })
+      if (column === 'password') {
+        if (value.length < 6 || value.length > 20) {
+          return reply.status(400).send({ error: 'Пароль должен быть от 6 до 20 символов' })
+        }
+        const saltRounds = 10
+        value = await bcrypt.hash(value, saltRounds)
       }
+
+      const updatedUser = await updateUser(decoded.userId, column, value)
+      if (!updatedUser) return reply.status(404).send({ error: 'Пользователь не найден' })
 
       reply.send({
         user: {
           id: updatedUser.id,
           name: updatedUser.name,
-          email: updatedUser.email,
-        },
+          email: updatedUser.email
+        }
       })
-    }
-    catch (error) {
+    } catch (error) {
       if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
         return reply.status(401).send({ error: 'Сессия устарела или токен невалиден' })
       }
-
       app.log.error(error)
       reply.status(500).send({ error: 'Внутренняя ошибка сервера' })
     }

@@ -18,8 +18,7 @@ export const ColumnDeleteModal = ({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={modalTitle} // Используем готовую переменную
-      centered
+      title={modalTitle}
       size="sm"
       radius="md"
       zIndex={3000}
@@ -28,7 +27,6 @@ export const ColumnDeleteModal = ({
         <Text size="sm">
           {modalMessage}
           {' '}
-          {/* Используем готовую переменную */}
         </Text>
 
         <Group justify="flex-end" mt="md">

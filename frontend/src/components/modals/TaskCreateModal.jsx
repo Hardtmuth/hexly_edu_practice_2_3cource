@@ -19,7 +19,6 @@ export const TaskCreateModal = ({ columnId, onClose, onCreate }) => {
       opened={columnId !== null}
       onClose={onClose}
       title={t('modals.createTask.title', 'Создать задачу')}
-      centered
     >
       <form onSubmit={handleSubmit}>
         <Stack gap="md">

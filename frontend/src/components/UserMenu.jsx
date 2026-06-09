@@ -1,8 +1,8 @@
 import { Menu, Avatar, Text } from '@mantine/core'
-import { IconLogout, IconTrash, IconSettings } from '@tabler/icons-react'
+import { IconLogout, IconTrash, IconUser, IconAt, IconPassword } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 
-export const UserMenu = ({ user, onEditClick, onDeleteClick, onLogoutClick }) => {
+export const UserMenu = ({ user, onEditClick, onDeleteClick, onLogoutClick, onEmailClick, onPasswordClick }) => {
   const { t } = useTranslation()
 
   const getInitials = () => {
@@ -33,10 +33,24 @@ export const UserMenu = ({ user, onEditClick, onDeleteClick, onLogoutClick }) =>
         <Menu.Divider />
 
         <Menu.Item
-          leftSection={<IconSettings size={16} />}
+          leftSection={<IconUser size={16} />}
           onClick={onEditClick}
         >
-          {t('header.menu.editProfile', 'Редактировать')}
+          {t('header.menu.editProfile', 'Редактировать имя')}
+        </Menu.Item>
+
+        <Menu.Item
+          leftSection={<IconAt size={16} />}
+          onClick={onEmailClick}
+        >
+          {t('header.menu.editEmail', 'Сменить email')}
+        </Menu.Item>
+
+        <Menu.Item
+          leftSection={<IconPassword size={16} />}
+          onClick={onPasswordClick}
+        >
+          {t('header.menu.editPassword', 'Изменить пароль')}
         </Menu.Item>
 
         <Menu.Item
