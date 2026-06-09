@@ -9,7 +9,7 @@ export const UserMenu = ({ user, onEditClick, onDeleteClick, onLogoutClick, onEm
     if (!user?.name) return 'US'
     return user.name
       .split(' ')
-      .map((n) => n[0])
+      .map(n => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2)

@@ -443,7 +443,7 @@ const server = () => {
       const existingUser = await findUserByEmail(email)
       if (existingUser) {
         return reply.status(400).send({
-          error: 'Пользователь с таким email уже зарегистрирован'
+          error: 'Пользователь с таким email уже зарегистрирован',
         })
       }
 
@@ -455,7 +455,7 @@ const server = () => {
       const token = jwt.sign(
         { userId: newUser.id, email: newUser.email },
         process.env.JWT_SECRET || 'secret-key',
-        { expiresIn: '24h' }
+        { expiresIn: '24h' },
       )
 
       reply.status(201).send({
@@ -463,10 +463,11 @@ const server = () => {
         user: {
           id: newUser.id,
           name: newUser.name,
-          email: newUser.email
-        }
+          email: newUser.email,
+        },
       })
-    } catch (error) {
+    }
+    catch (error) {
       app.log.error(error)
       reply.status(500).send({ error: 'Внутренняя ошибка сервера' })
     }
@@ -540,10 +541,11 @@ const server = () => {
         user: {
           id: updatedUser.id,
           name: updatedUser.name,
-          email: updatedUser.email
-        }
+          email: updatedUser.email,
+        },
       })
-    } catch (error) {
+    }
+    catch (error) {
       if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
         return reply.status(401).send({ error: 'Сессия устарела или токен невалиден' })
       }

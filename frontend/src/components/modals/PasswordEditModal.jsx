@@ -18,8 +18,8 @@ export const PasswordEditModal = ({ opened, onClose, onSave }) => {
         const empty = isNotEmpty(t('loginPage.form.passwordError'))(value)
         if (empty) return empty
         return matchesField('password', t('loginPage.form.confirmPasswordError', 'Пароли не совпадают'))(value, values)
-      }
-    }
+      },
+    },
   })
 
   const handleSubmit = (values) => {
@@ -34,7 +34,16 @@ export const PasswordEditModal = ({ opened, onClose, onSave }) => {
           <PasswordInput label={t('modals.profile.passLabel', 'Новый пароль')} key={form.key('password')} {...form.getInputProps('password')} data-autofocus />
           <PasswordInput label={t('modals.profile.confirmPassLabel', 'Подтвердите пароль')} key={form.key('confirmPassword')} {...form.getInputProps('confirmPassword')} />
           <Group justify="flex-end" mt="md">
-            <Button variant="subtle" color="gray" onClick={() => { form.reset(); onClose(); }}>{t('common.cancel', 'Отмена')}</Button>
+            <Button
+              variant="subtle"
+              color="gray"
+              onClick={() => {
+                form.reset()
+                onClose()
+              }}
+            >
+              {t('common.cancel', 'Отмена')}
+            </Button>
             <Button type="submit">{t('common.save', 'Сохранить')}</Button>
           </Group>
         </Stack>

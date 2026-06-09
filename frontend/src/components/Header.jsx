@@ -60,7 +60,7 @@ export const Header = () => {
         if (column === 'password') msg = t('profile.success.password', 'Пароль успешно изменен!')
 
         setSuccessMessage(msg)
-        
+
         setIsEditOpen(false)
         setIsEmailOpen(false)
         setIsPasswordOpen(false)
@@ -70,7 +70,8 @@ export const Header = () => {
       .catch((errorMsg) => {
         if (column === 'email') {
           setServerEmailError(errorMsg)
-        } else {
+        }
+        else {
           console.error('Ошибка обновления профиля:', errorMsg)
         }
       })
@@ -88,9 +89,9 @@ export const Header = () => {
   return (
     <Box pb={30}>
       {successMessage && (
-        <Alert 
-          variant="filled" 
-          color="teal" 
+        <Alert
+          variant="filled"
+          color="teal"
           icon={<IconCheck size={16} />}
           style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, boxShadow: 'var(--mantine-shadow-md)' }}
         >
@@ -129,12 +130,15 @@ export const Header = () => {
 
       <ProfileEditModal key={`name-${user?.id}`} user={user} opened={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={handleSaveProfile} />
 
-      <EmailEditModal 
-        key={`email-${user?.id}`} 
-        user={user} 
-        opened={isEmailOpen} 
-        onClose={() => { setIsEmailOpen(false); setServerEmailError(null); }} 
-        onSave={handleSaveProfile} 
+      <EmailEditModal
+        key={`email-${user?.id}-${isEmailOpen}`}
+        user={user}
+        opened={isEmailOpen}
+        onClose={() => {
+          setIsEmailOpen(false)
+          setServerEmailError(null)
+        }}
+        onSave={handleSaveProfile}
         error={serverEmailError}
         clearError={() => setServerEmailError(null)}
       />

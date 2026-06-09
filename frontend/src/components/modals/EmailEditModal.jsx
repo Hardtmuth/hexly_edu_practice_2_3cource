@@ -1,17 +1,12 @@
 import { Modal, TextInput, Group, Button, Stack, Alert } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 export const EmailEditModal = ({ user, opened, onClose, onSave, error, clearError }) => {
   const { t } = useTranslation()
-  const [email, setEmail] = useState(user?.email || '')
 
-  useEffect(() => {
-    if (opened && user) {
-      setEmail(user.email || '')
-    }
-  }, [opened, user])
+  const [email, setEmail] = useState(user?.email || '')
 
   const handleSubmit = (e) => {
     e.preventDefault()
