@@ -3,6 +3,13 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import { pool, getBoardData, findUserByEmail, verifyPassword, createUser, updateUser, deleteUser } from './queries.js'
 
+import { fileURLToPath } from 'url'
+import path from 'path'
+import fastifyStatic from '@fastify/static'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 const apiPath = '/api/v1'
 const getPath = keyword => [apiPath, keyword].join('/')
 
@@ -11,8 +18,17 @@ const server = () => {
     logger: true,
   })
 
+  app.register(fastifyStatic, {
+	  root: path.join(__dirname, '../frontend/dist'),
+      prefix: '/',
+  })
+
   app.register(import('@fastify/postgres'), {
     client: pool,
+  })
+
+  app.setNotFoundHandler((request, reply) => {
+	  reply.sendFile('index.html')
   })
 
   app.get('/', () => {
